@@ -75,6 +75,7 @@ The vision model was trained on the PlantVillage dataset using transfer learning
 ## 🛡️ License & Disclaimer
 This project is for educational and internship purposes. Always consult with a local agricultural officer before applying chemical treatments.
 
+## 📷 Images 
 
 <img width="1920" height="1080" alt="🌾 Tamil Nadu Smart Farmer AI - Google Chrome 5_12_2026 11_39_51 PM" src="https://github.com/user-attachments/assets/773a41d8-3bfb-42af-8ffb-b080cff13c7c" />
 
