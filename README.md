@@ -1,72 +1,76 @@
 # 🌾 Tamil Nadu Smart Farmer AI
+**Advanced Crop Disease Diagnosis & Multilingual Advisory System**
 
-An AI-powered Streamlit application that helps farmers diagnose crop diseases from leaf images and receive treatment advisories in **English and Tamil**. The app also includes a chatbot for farmer support.
-
----
-
-## ✨ Features
-- 📸 **Leaf Image Upload**: Farmers upload a photo of a diseased leaf.
-- 🧠 **CNN Disease Prediction**: MobileNetV2 model predicts the crop disease.
-- 📊 **Confidence Score**: Shows how confident the model is about its prediction.
-- 📋 **Advisory Generation**: Gemini AI provides treatment guidance in English, Tamil, or both.
-- 💬 **Farmer Chatbot**: Farmers can ask follow-up questions in English or Tamil.
-- ⚙️ **Language Toggle**: Sidebar option to choose English, Tamil, or bilingual output.
+## 📖 Overview
+This project is an AI-powered solution designed to assist farmers in Tamil Nadu with instant crop disease identification and treatment. By combining **Computer Vision** (Deep Learning) with **Generative AI** (LLMs), the system provides a seamless experience: from uploading a photo of an infected leaf to receiving a comprehensive treatment plan in **Tamil**.
 
 ---
 
-## 🛠️ Tech Stack
-- [Streamlit](ca://s?q=Learn_about_Streamlit) – UI framework
-- [PyTorch](ca://s?q=Learn_about_PyTorch) – Deep learning model
-- [Torchvision](ca://s?q=Learn_about_Torchvision) – Pretrained MobileNetV2
-- [Google Generative AI](ca://s?q=Learn_about_Google_Generative_AI) – Gemini model for advisory and chatbot
-- [PIL](ca://s?q=Learn_about_PIL) – Image processing
+## 🚀 Features
+* **Precision Diagnosis:** Uses a custom-trained **MobileNetV2** model to identify 15 different crop disease classes (Tomato, Potato, Pepper) with **94.6% accuracy**.
+* **Localized Advisory:** Automatically generates structured treatment plans (Symptoms, Organic and Chemical methods) in **Tamil script**.
+* **Stateful Support Chat:** Features a conversational interface that remembers the current diagnosis, allowing farmers to ask follow-up questions without re-uploading images.
+* **Cloud Ready:** Fully deployed and accessible via web browser through Streamlit.
+
+---
+
+## 🛠️ Technical Stack
+* **Deep Learning Framework:** PyTorch & Torchvision
+* **LLM Integration:** Google Gemini 1.5 Flash (via Generative AI SDK)
+* **Frontend UI:** Streamlit
+* **Programming Language:** Python 3.12+
+* **Architecture:** Transfer Learning on MobileNetV2
+
+---
+
+## 📊 Model Performance
+The vision model was trained on the PlantVillage dataset using transfer learning. 
+* **Validation Accuracy:** 94.6%
+* **Optimization:** Adam Optimizer with CrossEntropyLoss.
+* **Input Size:** 224x224 pixels.
+* **Normalization:** ImageNet standards ($\mu=[0.485, 0.456, 0.406], \sigma=[0.229, 0.224, 0.225]$).
+
+---
+
+## 📦 Local Setup & Installation
+
+1.  **Clone the Repository:**
+    ```bash
+    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+    cd your-repo-name
+    ```
+
+2.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **API Configuration:**
+    Set your Gemini API Key in `app.py` or as a Streamlit Secret:
+    ```python
+    API_KEY = "YOUR_API_KEY_HERE"
+    ```
+
+4.  **Run the App:**
+    ```bash
+    python -m streamlit run app.py
+    ```
 
 ---
 
 ## 📂 Project Structure
-Crop_AI_Project/
-│── app.py              # Main Streamlit app
-│── crop_disease_model.pth  # Trained CNN weights
-│── requirements.txt    # Python dependencies
-│── README.md           # Project documentation
-
-Code
+* `app.py` - The core Streamlit application script.
+* `crop_disease_model.pth` - Trained PyTorch model weights (State Dict).
+* `requirements.txt` - List of required Python libraries for deployment.
+* `README.md` - Project documentation and setup guide.
 
 ---
 
-## 🚀 Setup & Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/Crop_AI_Project.git
-   cd Crop_AI_Project
-Install dependencies:
+## 👨‍💻 Author
+**Ajay Tilak V**
+*Full-Stack Software Developer | AI Specialist*
 
-bash
-pip install -r requirements.txt
-Add your Gemini API key:
+---
 
-In app.py, replace:
-
-python
-API_KEY = ""  # replace with st.secrets["GEMINI_API_KEY"]
-Or set it in Streamlit Cloud secrets.
-
-Run the app:
-
-bash
-streamlit run app.py
-🌱 Usage
-Upload a diseased leaf photo (.jpg, .png, .jpeg).
-
-The CNN model predicts the disease and shows confidence.
-
-Gemini generates treatment advisory in your chosen language.
-
-Use the chatbot to ask follow-up questions in English or Tamil.
-
-📌 Notes
-Default language is Bilingual (English + Tamil).
-
-Advisory and chatbot respect the sidebar language toggle.
-
-If Gemini times out, the app shows a friendly error message and retries once.
+## 🛡️ License & Disclaimer
+This project is for educational and internship purposes. Always consult with a local agricultural officer before applying chemical treatments.
