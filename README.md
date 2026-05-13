@@ -16,7 +16,7 @@ This project is an AI-powered solution designed to assist farmers in Tamil Nadu 
 
 ## 🛠️ Technical Stack
 * **Deep Learning Framework:** PyTorch & Torchvision
-* **LLM Integration:** Google Gemini 1.5 Flash (via Generative AI SDK)
+* **LLM Integration:** Google Gemini 2.5 Flash (via Generative AI SDK)
 * **Frontend UI:** Streamlit
 * **Programming Language:** Python 3.12+
 * **Architecture:** Transfer Learning on MobileNetV2
