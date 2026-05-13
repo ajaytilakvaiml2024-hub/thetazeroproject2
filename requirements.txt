@@ -1,5 +1,8 @@
 streamlit
 torch
 torchvision
-google-generativeai
+google-genai
 Pillow
+numpy
+protobuf
+typing-extensions
