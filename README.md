@@ -36,8 +36,8 @@ The vision model was trained on the PlantVillage dataset using transfer learning
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone https://github.com/ajaytilakvaiml2024-hub/thetazeroproject2.git
+    cd thetazeroproject2
     ```
 
 2.  **Install Dependencies:**
