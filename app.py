@@ -2,18 +2,18 @@ import streamlit as st
 import torch
 from torchvision import models, transforms
 from PIL import Image
-from google import genai
+from groq import Groq
 import time
 
 # --- 1. SETUP & LLM CONFIG ---
-API_KEY = st.secrets["GEMINI_API_KEY"]  # keep secret in Streamlit Cloud
-client = genai.Client(api_key=API_KEY)
+API_KEY = st.secrets["GROQ_API_KEY"]  # keep secret in Streamlit Cloud
+client = Groq(api_key=API_KEY)
 
 # --- 2. LOAD TRAINED VISION MODEL ---
 @st.cache_resource
 def load_trained_model():
     model = models.mobilenet_v2(weights=None)
-    num_classes = 15
+    num_classes = 15  # adjust to 16 if retrained with Unknown class
     model.classifier[1] = torch.nn.Linear(model.last_channel, num_classes)
     model.load_state_dict(torch.load('crop_disease_model.pth', map_location='cpu'))
     model.eval()
@@ -84,12 +84,12 @@ if uploaded_file:
         with st.spinner("Generating Advisory..."):
             start_time = time.time()
             try:
-                response = client.models.generate_content(
-                    model="models/gemini-2.5-flash",
-                    contents=initial_prompt
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",  # Groq model
+                    messages=[{"role": "user", "content": initial_prompt}]
                 )
                 elapsed = time.time() - start_time
-                st.session_state.initial_advice = response.text
+                st.session_state.initial_advice = response.choices[0].message.content
                 st.caption(f"⏱️ Advisory generated in {elapsed:.2f} seconds")
             except Exception as e:
                 elapsed = time.time() - start_time
@@ -115,14 +115,15 @@ if uploaded_file:
         start_time = time.time()
         with st.spinner("Thinking..."):
             try:
-                response = client.models.generate_content(
-                    model="models/gemini-2.5-flash",
-                    contents=user_msg + " " + lang_instruction
+                response = client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[{"role": "user", "content": user_msg + " " + lang_instruction}]
                 )
                 elapsed = time.time() - start_time
-                st.chat_message("assistant").write(response.text)
+                st.chat_message("assistant").write(response.choices[0].message.content)
                 st.caption(f"⏱️ Response time: {elapsed:.2f} seconds")
             except Exception as e:
                 elapsed = time.time() - start_time
                 st.error(f"⚠️ Response failed after {elapsed:.2f} seconds. Error: {e}")
+
 
