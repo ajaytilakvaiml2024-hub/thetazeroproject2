@@ -2,18 +2,19 @@ import streamlit as st
 import torch
 from torchvision import models, transforms
 from PIL import Image
-from groq import Groq
+import google.generativeai as genai
 import time
 
 # --- 1. SETUP & LLM CONFIG ---
-API_KEY = st.secrets["GROQ_API_KEY"]  # keep secret in Streamlit Cloud
-client = Groq(api_key=API_KEY)
+API_KEY = st.secrets["GEMINI_API_KEY"]  # keep secret in Streamlit Cloud
+genai.configure(api_key=API_KEY)
+llm = genai.GenerativeModel('gemini-3.1-flash-lite')
 
 # --- 2. LOAD TRAINED VISION MODEL ---
 @st.cache_resource
 def load_trained_model():
     model = models.mobilenet_v2(weights=None)
-    num_classes = 15  # adjust to 16 if retrained with Unknown class
+    num_classes = 15
     model.classifier[1] = torch.nn.Linear(model.last_channel, num_classes)
     model.load_state_dict(torch.load('crop_disease_model.pth', map_location='cpu'))
     model.eval()
@@ -71,29 +72,40 @@ if uploaded_file:
     st.caption(f"Confidence: {confidence:.2f}")
 
     # --- 5. ADVISORY GENERATION BASED ON LANGUAGE CHOICE ---
-    if "last_diagnosis" not in st.session_state or st.session_state.get("last_diagnosis") != diagnosis:
+    if "chat" not in st.session_state or st.session_state.get("last_diagnosis") != diagnosis:
+        st.session_state.chat = llm.start_chat(history=[])
         st.session_state.last_diagnosis = diagnosis
 
         if lang_choice == "English":
-            initial_prompt = f"The identified crop disease is {diagnosis}. Provide a concise treatment advisory in English only."
+            initial_prompt = (
+                f"The identified crop disease is {diagnosis}. "
+                f"Provide a concise treatment advisory in English only."
+            )
         elif lang_choice == "Tamil":
-            initial_prompt = f"The identified crop disease is {diagnosis}. Provide a concise treatment advisory in Tamil script only."
+            initial_prompt = (
+                f"The identified crop disease is {diagnosis}. "
+                f"Provide a concise treatment advisory in Tamil script only."
+            )
         else:  # Bilingual
-            initial_prompt = f"The identified crop disease is {diagnosis}. Provide a concise treatment advisory in English. Then also provide the same advisory translated into Tamil script."
+            initial_prompt = (
+                f"The identified crop disease is {diagnosis}. "
+                f"Provide a concise treatment advisory in English. "
+                f"Then also provide the same advisory translated into Tamil script."
+            )
 
         with st.spinner("Generating Advisory..."):
             start_time = time.time()
             try:
-                response = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",  # Groq model
-                    messages=[{"role": "user", "content": initial_prompt}]
+                response = st.session_state.chat.send_message(
+                    initial_prompt,
+                    generation_config={"max_output_tokens": 512}
                 )
                 elapsed = time.time() - start_time
-                st.session_state.initial_advice = response.choices[0].message.content
+                st.session_state.initial_advice = response.text
                 st.caption(f"⏱️ Advisory generated in {elapsed:.2f} seconds")
-            except Exception as e:
+            except Exception:
                 elapsed = time.time() - start_time
-                st.error(f"⚠️ Advisory service failed after {elapsed:.2f} seconds. Error: {e}")
+                st.error(f"⚠️ Advisory service timed out after {elapsed:.2f} seconds.")
                 st.session_state.initial_advice = ""
 
     st.markdown("## 📋 Advisory")
@@ -102,9 +114,17 @@ if uploaded_file:
     # --- 6. CHATBOT LOOP WITH LANGUAGE CHOICE + TIMING ---
     st.markdown("## 💬 Farmer Support Chat")
 
+    for msg in st.session_state.chat.history:
+        if msg.role == "model":
+            st.chat_message("assistant").write(msg.parts[0].text)
+        else:
+            if "The identified crop disease is" not in msg.parts[0].text:
+                st.chat_message("user").write(msg.parts[0].text)
+
     if user_msg := st.chat_input("Ask a follow-up question..."):
         st.chat_message("user").write(user_msg)
 
+        # Apply sidebar language choice
         if lang_choice == "English":
             lang_instruction = "Respond in English."
         elif lang_choice == "Tamil":
@@ -115,15 +135,24 @@ if uploaded_file:
         start_time = time.time()
         with st.spinner("Thinking..."):
             try:
-                response = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=[{"role": "user", "content": user_msg + " " + lang_instruction}]
+                response = st.session_state.chat.send_message(
+                    user_msg + " " + lang_instruction,
+                    generation_config={"max_output_tokens": 256}
                 )
                 elapsed = time.time() - start_time
-                st.chat_message("assistant").write(response.choices[0].message.content)
+                st.chat_message("assistant").write(response.text)
                 st.caption(f"⏱️ Response time: {elapsed:.2f} seconds")
-            except Exception as e:
+            except Exception:
                 elapsed = time.time() - start_time
-                st.error(f"⚠️ Response failed after {elapsed:.2f} seconds. Error: {e}")
-
+                st.warning(f"⚠️ Response timed out after {elapsed:.2f} seconds. Retrying...")
+                try:
+                    response = st.session_state.chat.send_message(
+                        user_msg + " " + lang_instruction,
+                        generation_config={"max_output_tokens": 256}
+                    )
+                    elapsed = time.time() - start_time
+                    st.chat_message("assistant").write(response.text)
+                    st.caption(f"⏱️ Response time (retry): {elapsed:.2f} seconds")
+                except Exception:
+                    st.error("⚠️ Response timed out again. Please try later.")
 
